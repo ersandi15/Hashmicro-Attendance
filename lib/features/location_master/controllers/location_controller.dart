@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
@@ -17,6 +19,9 @@ class LocationController extends GetxController {
   var selectedLat = 0.0.obs;
   var selectedLng = 0.0.obs;
   var isLoading = false.obs;
+
+  var searchResults = <Map<String, dynamic>>[].obs;
+  var isSearching = false.obs;
 
   // Di dalam LocationController
   GoogleMapController? mapController;
@@ -112,6 +117,101 @@ class LocationController extends GetxController {
     } catch (e) {
       address.value = "Alamat tidak ditemukan";
     }
+  }
+
+  // Fungsi mencari koordinat dari teks alamat
+  Future<void> searchAddress(String query) async {
+    if (query.isEmpty) {
+      searchResults.clear();
+      return;
+    }
+
+    try {
+      isSearching.value = true;
+      List<Location> locations = await locationFromAddress(query);
+
+      List<Map<String, dynamic>> resultsWithAddress = [];
+
+      // Batasi 5 hasil pencarian untuk di reverse-geocode agar lebih cepat
+      for (var loc in locations.take(5)) {
+        try {
+          List<Placemark> placemarks = await placemarkFromCoordinates(
+            loc.latitude,
+            loc.longitude,
+          );
+          if (placemarks.isNotEmpty) {
+            Placemark place = placemarks.first;
+
+            List<String> addressParts = [];
+            if (place.street != null && place.street!.isNotEmpty) {
+              addressParts.add(place.street!);
+            }
+            if (place.subLocality != null &&
+                place.subLocality!.isNotEmpty &&
+                place.subLocality != place.street) {
+              addressParts.add(place.subLocality!);
+            }
+            if (place.locality != null && place.locality!.isNotEmpty) {
+              addressParts.add(place.locality!);
+            }
+            if (place.administrativeArea != null &&
+                place.administrativeArea!.isNotEmpty) {
+              addressParts.add(place.administrativeArea!);
+            }
+
+            String fullAddr = addressParts.join(', ');
+            if (fullAddr.isEmpty) {
+              fullAddr =
+                  "Lat: ${loc.latitude.toStringAsFixed(4)}, Lng: ${loc.longitude.toStringAsFixed(4)}";
+            }
+
+            String name = place.name ?? "";
+            if (name.isEmpty || name == place.street) {
+              name =
+                  addressParts.isNotEmpty
+                      ? addressParts.first
+                      : "Lokasi Ditemukan";
+            }
+
+            resultsWithAddress.add({
+              'location': loc,
+              'name': name,
+              'address': fullAddr,
+            });
+          }
+        } catch (e) {
+          resultsWithAddress.add({
+            'location': loc,
+            'name': "Lokasi Terpilih",
+            'address':
+                "Lat: ${loc.latitude.toStringAsFixed(4)}, Lng: ${loc.longitude.toStringAsFixed(4)}",
+          });
+        }
+      }
+
+      searchResults.value = resultsWithAddress; // Menampilkan hasil ke dropdown
+    } catch (e) {
+      log("Alamat tidak ditemukan");
+    } finally {
+      isSearching.value = false;
+    }
+  }
+
+  // Fungsi saat hasil pencarian diklik
+  void selectSearchResult(Location loc, String fullAddress, String name) {
+    selectedLat.value = loc.latitude;
+    selectedLng.value = loc.longitude;
+    address.value = fullAddress;
+
+    // Gunakan nama tempat spesifik
+    nameController.text = name;
+
+    // Pindahkan kamera peta
+    mapController?.animateCamera(
+      CameraUpdate.newLatLng(LatLng(loc.latitude, loc.longitude)),
+    );
+
+    searchResults.clear(); // Tutup dropdown
   }
 
   @override

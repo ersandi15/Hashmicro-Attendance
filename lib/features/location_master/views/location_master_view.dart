@@ -12,15 +12,15 @@ class LocationMasterView extends GetView<LocationController> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true, // Membuat Map memenuhi layar
-      appBar: AppBar(
-        title: const Text(
-          "Set Office Location",
-          style: TextStyle(color: Colors.black87),
-        ),
-        backgroundColor: Colors.white.withValues(alpha: 0.8),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black87),
-      ),
+      // appBar: AppBar(
+      //   title: const Text(
+      //     "Set Office Location",
+      //     style: TextStyle(color: Colors.black87),
+      //   ),
+      //   backgroundColor: Colors.white.withValues(alpha: 0.8),
+      //   elevation: 0,
+      //   iconTheme: const IconThemeData(color: Colors.black87),
+      // ),
       body: Stack(
         children: [
           // Background Map
@@ -49,6 +49,105 @@ class LocationMasterView extends GetView<LocationController> {
                     ),
                   ),
               },
+            ),
+          ),
+
+          // 2. Custom Back Button (Pengganti AppBar)
+          Positioned(
+            top: 60,
+            left: 15,
+            child: CircleAvatar(
+              backgroundColor: Colors.white,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black87),
+                onPressed: () => Get.back(),
+              ),
+            ),
+          ),
+
+          // 2. Lapisan Atas: Search Bar & Dropdown
+          Positioned(
+            top: 50,
+            left: 70, // Beri jarak untuk tombol back
+            right: 15,
+            child: Column(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black12, blurRadius: 10),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: controller.nameController,
+                    onChanged:
+                        (val) =>
+                            controller.searchAddress(val), // Trigger pencarian
+                    decoration: const InputDecoration(
+                      hintText: "Cari alamat kantor...",
+                      prefixIcon: Icon(Icons.search, color: Colors.blueAccent),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 15,
+                        horizontal: 10,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Dropdown hasil pencarian yang melayang
+                Obx(
+                  () =>
+                      controller.searchResults.isNotEmpty
+                          ? Container(
+                            margin: const EdgeInsets.only(top: 5),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            constraints: const BoxConstraints(maxHeight: 250),
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: controller.searchResults.length,
+                              itemBuilder: (context, index) {
+                                final item = controller.searchResults[index];
+                                final loc =
+                                    item['location'] as dynamic; // Location
+                                final name = item['name'] as String;
+                                final address = item['address'] as String;
+
+                                return ListTile(
+                                  leading: const Icon(
+                                    Icons.location_on,
+                                    color: Colors.blueAccent,
+                                  ),
+                                  title: Text(
+                                    name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    address,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  onTap:
+                                      () => controller.selectSearchResult(
+                                        loc,
+                                        address,
+                                        name,
+                                      ),
+                                );
+                              },
+                            ),
+                          )
+                          : const SizedBox(),
+                ),
+              ],
             ),
           ),
 

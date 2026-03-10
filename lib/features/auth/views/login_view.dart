@@ -46,6 +46,13 @@ class LoginView extends GetView<LoginController> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(
+                      color: Colors.blueAccent,
+                      width: 2.0,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -57,6 +64,13 @@ class LoginView extends GetView<LoginController> {
                   prefixIcon: const Icon(Icons.lock_outline),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(
+                      color: Colors.blueAccent,
+                      width: 2.0,
+                    ),
                   ),
                 ),
               ),

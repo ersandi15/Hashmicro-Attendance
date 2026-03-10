@@ -173,7 +173,7 @@ class AttendanceView extends GetView<AttendanceController> {
                       controller.isLoading.value
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text(
-                            "Clock In",
+                            "Kirim Kehadiran",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
